@@ -36,7 +36,7 @@ import com.kh.lgtwhp.common.model.vo.PageInfo;
 @Controller
 public class AdminController {
 	@Autowired
-	private AdminService as;
+	private AdminService as;     
 	
 	@RequestMapping("adminLogin.ad")
 	public String changeLoginForm() {
