@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+  
+<configuration>
+	<settings>
+		<setting name="jdbcTypeForNull" value="NULL"/>
+		<setting name="autoMappingUnknownColumnBehavior" value="WARNING"/>
+		<setting name="callSettersOnNulls" value="true"/>
+		<setting name="cacheEnabled" value="false"/>
+  		<setting name="localCacheScope" value="STATEMENT"/>
+	</settings>
+	
+	<typeAliases>
+		<typeAlias type="com.kh.lgtwhp.common.model.vo.PageInfo" alias="PageInfo"/>
+		<typeAlias type="com.kh.lgtwhp.admin.model.vo.Client" alias="Client"/>
+		<typeAlias type="com.kh.lgtwhp.admin.model.vo.Contract" alias="Contract"/>
+	</typeAliases>
+	
+	<mappers>
+		<mapper resource="mappers/admin-mapper.xml"/>
+	</mappers>
+	
+</configuration>

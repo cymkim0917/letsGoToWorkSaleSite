@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Admin">
+	<resultMap type="java.util.HashMap" id="consultingResultSet">
+		<id property="requestNo" column="REQUEST_NO"/>
+		<result property="companyName" column="COMPANY_NAME"/>
+		<result property="companyMail" column="COMPANY_MAIL"/>
+		<result property="managerPhone" column="MANAGER_PHONE"/>
+		<result property="message" column="MESSAGE"/>
+		<result property="requestDate" column="REQUEST_DATE"/>
+		<result property="status" column="STATUS"/>
+		<result property="managerName" column="MANAGER_NAME"/>
+		<result property="companyHome" column="COMPANY_HOME"/>
+	</resultMap>
+	
+	<resultMap type="java.util.HashMap" id="chResultSet">
+		<id property="chNo" column="CH_NO"/>
+		<result property="requestNo" column="REQUEST_NO"/>
+		<result property="chDate" column="CH_DATE"/>
+		<result property="chContent" column="CH_CONTENT"/>
+	</resultMap>
+	
+	<resultMap type="java.util.HashMap" id="clientResultSet">
+		<id property="clientNo" column="CLIENT_NO"/>
+		<result property="clientName" column="CLIENT_NAME"/>
+		<result property="managerName" column="MANAGER_NAME"/>
+		<result property="managerPhone" column="MANAGER_PHONE"/>
+		<result property="managerMail" column="MANAGER_MAIL"/>
+		<result property="startDate" column="START_DATE"/>
+		<result property="endDate" column="END_DATE"/>
+		<result property="productCode" column="PRODUCT_CODE"/>
+		<result property="product" column="PRODUCT"/>
+		<result property="paymentType" column="PAYMENT_TYPE"/>
+		<result property="domainUrl" column="DOMAIN_URL"/>
+		<result property="clientDB" column="CLIENT_DB"/>
+		<result property="maxUser" column="MAX_USER"/>
+		<result property="status" column="STATUS"/>
+	</resultMap>
+	
+	<resultMap type="Contract" id="downloadResultSet">
+		<id property="fileNo" column="FILE_NO"/>
+		<result property="originName" column="ORIGIN_NAME"/>
+		<result property="changeName" column="CHANGE_NAME"/>
+		<result property="filePath" column="FILE_ROOT"/>
+		<result property="uploadDate" column="UPLOAD_DATE"/>
+		<result property="clientNo" column="CLIENT_NO"/>
+	</resultMap>
+	
+	<resultMap type="java.util.HashMap" id="calculateResultSet">
+		<id property="calculateNo" column="CALCULATE_NO"/>
+		<result property="clientName" column="CLIENT_NAME"/>
+		<result property="managerName" column="MANAGER_NAME"/>
+		<result property="product" column="PRODUCT"/>
+		<result property="priceDate" column="PRICE_DATE"/>
+		<result property="calculatePrice" column="CALCULATE_PRICE"/>
+		<result property="calculateType" column="CALCULATE_TYPE"/>
+		<result property="inputDate" column="INPUT_DATE"/>
+	</resultMap>
+	
+	<resultMap type="java.util.HashMap" id="smResultSet">
+		<id property="month" column="MONTH"/>
+		<result property="price" column="PRICE"/>
+	</resultMap>
+	
+	<resultMap type="java.util.HashMap" id="ccResultSet">
+		<id property="month" column="MONTH"/>
+		<result property="consulting" column="CONSULTING"/>
+	</resultMap>
+	
+	<resultMap type="java.util.HashMap" id="cpResultSet">
+		<id property="product" column="PRODUCT"/>
+		<result property="clientCount" column="CLIENT_COUNT"/>
+	</resultMap>
+	
+	<resultMap type="java.util.HashMap" id="ccsResultSet">
+		<id property="status" column="STATUS"/>
+		<result property="count" column="COUNT"/>
+	</resultMap>
+	
+	
+
+	<select id="selectConsultingListCount" resultType="_int">
+		SELECT COUNT(*)
+		FROM REQUEST
+	</select>
+
+	<select id="selectConsultingList" parameterType="PageInfo" resultMap="consultingResultSet">
+		SELECT *
+		FROM REQUEST
+		ORDER BY REQUEST_NO DESC
+	</select>
+	
+	<select id="selectCHList" parameterType="_int" resultMap="chResultSet">
+		SELECT *
+		FROM CONSULTING_HISTORY
+		WHERE REQUEST_NO = #{no}
+		ORDER BY CH_NO DESC
+	</select>
+	
+	<select id="selectClientListCount" resultType="_int">
+		SELECT COUNT(*)
+		FROM CLIENT
+	</select>
+	
+	<select id="selectClientList" parameterType="PageInfo" resultMap="clientResultSet">
+		SELECT *
+		FROM CLIENT C
+		JOIN PRODUCT P ON (P.PRODUCT_CODE = C.PRODUCT_CODE)
+		ORDER BY CLIENT_NO DESC
+	</select>
+	
+	<select id="selectDetailcList" parameterType="_int" resultMap="clientResultSet">
+		SELECT * 
+		FROM CLIENT C
+		JOIN PRODUCT P ON (P.PRODUCT_CODE = C.PRODUCT_CODE)
+		WHERE CLIENT_NO = #{no}
+	</select>
+	
+	<select id="searchConsultingListCount" parameterType="java.util.HashMap" resultType="_int">
+		SELECT COUNT(*)
+		FROM REQUEST
+		WHERE REQUEST_DATE BETWEEN #{start} AND #{end}
+	</select>
+	
+	<select id="searchConsultingList" parameterType="java.util.HashMap" resultMap="consultingResultSet">
+		SELECT *
+		FROM REQUEST
+		WHERE REQUEST_DATE BETWEEN #{start} AND #{end}
+		ORDER BY REQUEST_NO DESC
+	</select>
+	
+	<insert id="insertClient" parameterType="Client">
+		INSERT INTO CLIENT
+		VALUES(SEQ_CLIENT_NO.NEXTVAL, #{clientName}, #{managerName}, #{managerPhone}, #{managerMail}, #{startDate}, #{endDate},
+		       (SELECT PRODUCT_CODE FROM PRODUCT WHERE PRODUCT_NAME = #{product}), #{product}, #{paymentType}, #{domainUrl}, #{clientDB}, #{maxUser}, 'Y')
+	</insert>
+	<insert id="insertContract" parameterType="java.util.HashMap">
+		INSERT INTO CONTRACT
+		VALUES(SEQ_FILE_NO.NEXTVAL, #{originName}, #{changeName}, #{filePath}, SYSDATE, SEQ_CLIENT_NO.CURRVAL)
+	</insert>
+	
+	<update id="updateStatus" parameterType="_int">
+		UPDATE CLIENT
+		SET STATUS = 'N'
+		WHERE CLIENT_NO = #{no}
+	</update>
+	
+	<update id="updateContract" parameterType="Client">
+		UPDATE CLIENT
+		SET CLIENT_NAME=#{clientName}, MANAGER_NAME=#{managerName}, MANAGER_PHONE=#{managerPhone}, MANAGER_MAIL=#{managerMail},
+		    PRODUCT_CODE=(SELECT PRODUCT_CODE FROM PRODUCT WHERE PRODUCT_NAME = #{product}),PRODUCT = #{product},
+		    PAYMENT_TYPE=#{paymentType}, END_DATE=#{endDate}, DOMAIN_URL=#{domainUrl}, CLIENT_DB=#{clientDB}, MAX_USER=#{maxUser}
+		WHERE CLIENT_NO = #{clientNo}
+	</update>
+	
+	<insert id="updateReContract" parameterType="java.util.HashMap">
+		INSERT INTO CONTRACT
+		VALUES(SEQ_FILE_NO.NEXTVAL, #{originName}, #{changeName}, #{filePath}, SYSDATE, #{clientNo})
+	</insert>
+	
+	<select id="downloadFile" parameterType="_int" resultMap="downloadResultSet">
+		SELECT FILE_NO, ORIGIN_NAME, CHANGE_NAME, FILE_ROOT, UPLOAD_DATE, CLIENT_NO
+		FROM (SELECT ROWNUM RNUM, FILE_NO, ORIGIN_NAME, CHANGE_NAME, FILE_ROOT, UPLOAD_DATE, CLIENT_NO
+    		  FROM CONTRACT
+   		      WHERE CLIENT_NO = #{no}
+     		  ORDER BY FILE_NO DESC)
+		WHERE RNUM = 1
+	</select> 
+	
+	<select id="searchClientListCount" parameterType="Client" resultType="_int">
+		SELECT COUNT(*)
+		FROM CLIENT
+		WHERE 1 = 1
+		<if test='status == "Y"'>
+			AND STATUS = 'Y'
+		</if>
+		<if test='status == "N"'>
+			AND STATUS = 'N'
+		</if>
+	</select>
+	
+	<select id="searchClientList" parameterType="Client" resultMap="clientResultSet">
+		SELECT *
+		FROM CLIENT
+		WHERE 1 = 1
+		<if test='status == "Y"'>
+			AND STATUS = 'Y'
+		</if>
+		<if test='status == "N"'>
+			AND STATUS = 'N'
+		</if>
+		ORDER BY CLIENT_NO DESC
+	</select>
+	
+	<insert id="insertNewCalculate" parameterType="Client">
+		INSERT INTO CALCULATE
+		VALUES (SEQ_CALCULATE_NO.NEXTVAL, SEQ_CLIENT_NO.CURRVAL, 'N', 
+		        (SELECT JOIN_COST FROM PRODUCT WHERE PRODUCT_NAME=#{product}) 
+		        + #{price}
+		        + (#{paymentType} * #{maxUser} * (SELECT MONTH_PRICE FROM PRODUCT WHERE PRODUCT_NAME = #{product})), #{product},
+		        #{startDate}, null, #{managerName})
+	</insert>
+	
+	<insert id="insertReCalculate" parameterType="Client">
+		INSERT INTO CALCULATE
+		VALUES (SEQ_CALCULATE_NO.NEXTVAL, #{clientNo}, 'N', 
+			    (#{paymentType} * #{maxUser} * (SELECT MONTH_PRICE FROM PRODUCT WHERE PRODUCT_NAME = #{product})), #{product},
+		        (SELECT END_DATE FROM CLIENT WHERE CLIENT_NO = #{clientNo}), null, #{managerName})
+	</insert>
+	
+	<select id="selectCalculateListCount" resultType="_int">
+		SELECT COUNT(*)
+		FROM CALCULATE
+	</select>
+	
+	<select id="selectCalculateList" parameterType="PageInfo" resultMap="calculateResultSet">
+		SELECT CL.CALCULATE_NO, C.CLIENT_NAME, C.MANAGER_NAME, CL.PRODUCT, CL.PRICE_DATE, 
+        	   CL.CALCULATE_PRICE, CL.CALCULATE_TYPE, CL.INPUT_DATE
+		FROM CALCULATE CL
+		JOIN CLIENT C ON (C.CLIENT_NO = CL.CLIENT_NO)
+		ORDER BY 1 DESC
+	</select>
+	
+	<update id="okCalculate" parameterType="_int">
+		UPDATE CALCULATE
+		SET INPUT_DATE = SYSDATE, CALCULATE_TYPE = 'Y'
+		WHERE CALCULATE_NO = #{no}
+	</update>
+	
+	<select id="searchCalculateListCount" resultType="_int" parameterType="java.util.HashMap">
+		SELECT COUNT(*)
+		FROM CALCULATE
+		WHERE 1 = 1
+		<if test="startD != ''">
+			AND PRICE_DATE BETWEEN #{startD} AND #{endD}
+		</if>
+		<if test='option == "Y"'>
+			AND CALCULATE_TYPE = 'Y'
+		</if>
+		<if test='option == "N"'>
+			AND CALCULATE_TYPE = 'N'
+		</if>
+	</select>
+	
+	<select id="searchCalculateList" resultMap="calculateResultSet" parameterType="java.util.HashMap">
+		SELECT CL.CALCULATE_NO, C.CLIENT_NAME, C.MANAGER_NAME, C.PRODUCT, CL.PRICE_DATE, 
+        	   CL.CALCULATE_PRICE, CL.CALCULATE_TYPE, CL.INPUT_DATE
+		FROM CALCULATE CL
+		JOIN CLIENT C ON (C.CLIENT_NO = CL.CLIENT_NO)
+		WHERE 1 = 1
+		<if test="startD != ''">
+			AND PRICE_DATE BETWEEN #{startD} AND #{endD}
+		</if>
+		<if test='option == "Y"'>
+			AND CALCULATE_TYPE = 'Y'
+		</if>
+		<if test='option == "N"'>
+			AND CALCULATE_TYPE = 'N'
+		</if>
+		ORDER BY 1 DESC
+	</select>
+	
+	<select id="selectMoney" parameterType="java.lang.String" resultMap="smResultSet">
+		SELECT TO_CHAR(INPUT_DATE, 'MM') MONTH,SUM(CALCULATE_PRICE) PRICE
+		FROM CALCULATE
+		WHERE TO_CHAR(INPUT_DATE, 'YYYY') = #{date}
+		GROUP BY TO_CHAR(INPUT_DATE, 'MM')
+		ORDER BY 1 DESC
+	</select>
+	
+	<select id="selectConsulting" parameterType="java.lang.String" resultMap="ccResultSet">
+		SELECT TO_CHAR(CH_DATE, 'MM') MONTH, COUNT(*) CONSULTING
+		FROM CONSULTING_HISTORY
+		WHERE TO_CHAR(CH_DATE, 'YYYY') = #{date}
+		GROUP BY TO_CHAR(CH_DATE, 'MM')
+	</select>
+	
+	<select id="selectClient" parameterType="java.lang.String" resultMap="cpResultSet">
+		SELECT PRODUCT, COUNT(*) CLIENT_COUNT
+		FROM CLIENT
+		WHERE STATUS = 'Y'
+		<![CDATA[
+		AND TO_CHAR(START_DATE, 'YYYY') <= #{date}
+ 		]]>
+		GROUP BY PRODUCT
+	</select>
+	
+	<select id="selectMainConsulting" resultMap="ccsResultSet">
+		SELECT STATUS, COUNT(*) COUNT
+		FROM REQUEST
+		GROUP BY STATUS
+	</select>
+	
+	<select id="selectMainClient" resultMap="ccsResultSet">
+		SELECT STATUS, COUNT(*) COUNT
+		FROM CLIENT
+		GROUP BY STATUS
+	</select>
+	
+	<select id="selectMainCalculate" resultType="_int">
+		SELECT COUNT(*)
+		FROM CALCULATE
+		WHERE CALCULATE_TYPE = 'N'
+	</select>
+	
+	<insert id="insertCH" parameterType="java.util.HashMap">
+		INSERT INTO CONSULTING_HISTORY
+		VALUES (SEQ_CH_NO.NEXTVAL, #{no}, #{date}, #{content})
+	</insert>
+	
+	<insert id="insertCr" parameterType="java.util.HashMap">
+		INSERT INTO REQUEST
+		VALUES (SEQ_REQUEST_NO.NEXTVAL, #{cName}, #{email}, #{phone}, #{message}, SYSDATE, '대기', #{mName}, #{cHome})
+	</insert>
+</mapper>
+ 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
